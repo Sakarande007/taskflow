@@ -23,7 +23,7 @@ dist-ssr
 *.sln
 *.sw?
 
-.env
+*.env
 .env.local
 .implementation_plan.md
 TASKFLOW_COMPLETE_ARCHITECTURE_PROMPT.md
