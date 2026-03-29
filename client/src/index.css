@@ -1,1 +1,57 @@
 @import "tailwindcss";
+
+/* ── Design System Variables ─────────────────────────── */
+:root {
+  --bg-deep:       #060d1f;
+  --bg-surface:    #0f172a;
+  --bg-card:       #1e293b;
+  --accent-cyan:   #06b6d4;
+  --accent-amber:  #f59e0b;
+  --text-primary:  #f1f5f9;
+  --text-muted:    #64748b;
+  --border:        #1e293b;
+}
+
+/* ── Base ────────────────────────────────────────────── */
+html, body {
+  background-color: var(--bg-deep);
+  color: var(--text-primary);
+  font-family: 'DM Sans', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  scroll-behavior: smooth;
+}
+
+/* ── Typography ──────────────────────────────────────── */
+h1, h2, h3, .font-display {
+  font-family: 'Syne', system-ui, sans-serif;
+}
+
+/* ── Scrollbar ───────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #0f172a; }
+::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+/* ── Grid background for hero ────────────────────────── */
+.grid-bg {
+  background-image:
+    linear-gradient(rgba(6,182,212,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(6,182,212,0.04) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+/* ── Glassmorphism card ───────────────────────────────── */
+.glass-card {
+  background: rgba(255,255,255,0.03);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+/* ── Pulse animation for overdue tasks ───────────────── */
+@keyframes pulse-slow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+.animate-pulse-slow {
+  animation: pulse-slow 2s ease-in-out infinite;
+}
