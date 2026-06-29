@@ -1,15 +1,42 @@
-import React, { useState} from "react";
-import { Link } from "react-router-dom";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Mail, Lock, ArrowRight } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
+import toast from "react-hot-toast";
+
+const ROLE_HOME = {
+  superadmin: "/superadmin/dashboard",
+  admin:      "/admin/dashboard",
+  sales:      "/user/dashboard",
+  marketing:  "/user/dashboard",
+  inventory:  "/user/dashboard",
+  user:       "/user/dashboard",
+};
 
 function Login() {
-  const [email, setEmail] = useState("");
+  const [email,    setEmail]    = useState("");
   const [password, setPassword] = useState("");
+  const [loading,  setLoading]  = useState(false);
+  const [error,    setError]    = useState("");
+  const { login } = useAuth();
+  const navigate  = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Login attempt:", { email, password });
+    setError("");
+    setLoading(true);
+    try {
+      const user = await login(email, password);
+      toast.success(`Welcome back, ${user.name}!`);
+      navigate(ROLE_HOME[user.role] || "/dashboard");
+    } catch (err) {
+      const msg = err.response?.data?.message || "Invalid email or password";
+      setError(msg);
+      toast.error(msg);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -35,10 +62,7 @@ function Login() {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Email Field */}
             <div className="space-y-2">
-              <label
-                htmlFor="email"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
+              <label htmlFor="email" className="text-sm font-medium leading-none">
                 Email Address
               </label>
               <div className="relative">
@@ -49,7 +73,7 @@ function Login() {
                   placeholder="name@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="flex h-11 w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 pl-10 text-sm ring-offset-slate-950 file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="flex h-11 w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 pl-10 text-sm placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
                   required
                 />
               </div>
@@ -58,18 +82,12 @@ function Login() {
             {/* Password Field */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label
-                  htmlFor="password"
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                >
+                <label htmlFor="password" className="text-sm font-medium leading-none">
                   Password
                 </label>
-                <a
-                  href="#"
-                  className="text-xs text-indigo-400 hover:text-indigo-300"
-                >
+                <Link to="/forgot-password" className="text-xs text-cyan-400 hover:text-cyan-300">
                   Forgot password?
-                </a>
+                </Link>
               </div>
               <div className="relative">
                 <Lock className="absolute left-3 top-3 h-5 w-5 text-slate-500" />
@@ -79,29 +97,40 @@ function Login() {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="flex h-11 w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 pl-10 text-sm ring-offset-slate-950 file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="flex h-11 w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 pl-10 text-sm placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
                   required
                 />
               </div>
             </div>
 
+            {/* Error message */}
+            {error && (
+              <div className="rounded-md bg-red-500/10 border border-red-500/30 px-3 py-2 text-sm text-red-400">
+                {error}
+              </div>
+            )}
+
             {/* Login Button */}
             <button
               type="submit"
-              className="group relative flex h-11 w-full items-center justify-center gap-2 rounded-md bg-linear-to-r from-indigo-600 to-pink-600 px-8 text-sm font-medium text-white transition-all hover:from-indigo-500 hover:to-pink-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-950"
+              disabled={loading}
+              className="group relative flex h-11 w-full items-center justify-center gap-2 rounded-md bg-gradient-to-r from-cyan-600 to-blue-600 px-8 text-sm font-medium text-white transition-all hover:from-cyan-500 hover:to-blue-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 focus:ring-offset-slate-950 disabled:opacity-60"
             >
-              Sign In
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              {loading ? (
+                <span className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <>
+                  Sign In
+                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </>
+              )}
             </button>
           </form>
 
           {/* Footer / Register Link */}
           <div className="mt-6 text-center text-sm text-slate-400">
             Don&apos;t have an account?{" "}
-            <Link
-              to = "/register"
-              className="font-semibold text-indigo-400 hover:text-indigo-300 hover:underline"
-            >
+            <Link to="/register" className="font-semibold text-cyan-400 hover:text-cyan-300 hover:underline">
               Register here
             </Link>
           </div>

@@ -1,45 +1,51 @@
-import React from 'react'
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useState } from 'react'
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Mail, Lock, ArrowRight, User, ChevronDown, AlertCircle } from "lucide-react";
+import API from "../api/axios";
+import toast from "react-hot-toast";
 
 function Register() {
-    // Single state object for cleaner form management
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
     confirmPassword: "",
-    role: "user", // Set a default initial role
+    role: "user",
   });
-
-  // State for handling validation errors (e.g., password mismatch)
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  // Generic handler for all input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
-    // Clear errors as soon as the user starts typing again
     if (error) setError("");
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Basic Validation: Check password match
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords do not match.");
       return;
     }
 
-    // Passwords match, proceed with submission logic
-    console.log("Registration Data Submitted:", formData);
-    // Add your API call here
+    setLoading(true);
+    setError("");
+    try {
+      const res = await API.post("/api/user/register", {
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        role: formData.role
+      });
+      toast.success(res.data.message || "Registration successful! Please check your email to verify your account.");
+      navigate("/login");
+    } catch (err) {
+      setError(err.response?.data?.message || err.message || "Registration failed");
+    } finally {
+      setLoading(false);
+    }
   };
 
 
@@ -185,10 +191,11 @@ function Register() {
           {/* Submit Button */}
           <button
             type="submit"
-            className="group relative flex h-11 w-full items-center justify-center gap-2 rounded-md bg-linear-to-r from-indigo-600 to-pink-600 px-8 text-sm font-medium text-white transition-all hover:from-indigo-500 hover:to-pink-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-950 mt-2"
+            disabled={loading}
+            className="group relative flex h-11 w-full items-center justify-center gap-2 rounded-md bg-linear-to-r from-indigo-600 to-pink-600 px-8 text-sm font-medium text-white transition-all hover:from-indigo-500 hover:to-pink-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-950 mt-2 disabled:opacity-50"
           >
-            create Account
-            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+            {loading ? "Creating..." : "Create Account"}
+            {!loading && <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />}
           </button>
         </form>
 

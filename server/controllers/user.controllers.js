@@ -120,7 +120,7 @@ export async function loginController(request, response) {
       });
     }
 
-    const user = await UserModel.findOne({ email , verify_email: false });
+    const user = await UserModel.findOne({ email });
 
     if (!user) {
       return response.status(404).json({
@@ -188,7 +188,7 @@ export async function logoutController(request, response) {
       secure: false,
       sameSite: "None",
     };
-    response.clearCookie("accesstoken");
+    response.clearCookie("accessToken");
     response.clearCookie("refreshToken");
 
     const removeRefreshToken = await UserModel.findByIdAndUpdate(userId, {
@@ -477,6 +477,29 @@ export async function refreshToken(request, response) {
         accesstoken: newAccessToken,
       },
     });
+  } catch (error) {
+    return response.status(500).json({
+      message: error.message || error,
+      error: true,
+      success: false,
+    });
+  }
+}
+
+// Get User Profile
+export async function getUserProfile(request, response) {
+  try {
+    const user = await UserModel.findById(request.userId).select(
+      "-password -refresh_token -forgot_passward_otp -forgot_passward_expiry"
+    );
+    if (!user) {
+      return response.status(404).json({
+        message: "User not found",
+        error: true,
+        success: false,
+      });
+    }
+    return response.json({ success: true, error: false, data: user });
   } catch (error) {
     return response.status(500).json({
       message: error.message || error,
